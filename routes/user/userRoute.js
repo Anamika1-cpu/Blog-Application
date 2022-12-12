@@ -12,8 +12,11 @@ const {
   unfollowingUser,
   blockUser,
   unblockUser,
-  generateVeificationToken,
   profilePhotoUploadCtrl,
+  generateVerificationMail,
+  accountVerification,
+  resetPasswordToken,
+  resetPassword,
 } = require("../../controllers/user/userCntrl");
 const authMiddleware = require("../../middlewares/error/auth/authMiddleware");
 const {
@@ -54,5 +57,15 @@ router.put("/block-user/:id", authMiddleware, blockUser);
 
 router.put("/unblock-user/:id", authMiddleware, unblockUser);
 
-router.patch("/send-email", authMiddleware, generateVeificationToken);
+router.post(
+  "/generate-verify-email-token",
+  authMiddleware,
+  generateVerificationMail
+);
+router.patch("/verify-account", authMiddleware, accountVerification);
+
+router.post("/forgot-password-token", resetPasswordToken);
+
+router.patch("/reset-password", resetPassword);
+
 module.exports = router;

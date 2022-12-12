@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const { log } = require("util");
 //create schema
 
 const userSchema = new mongoose.Schema(
@@ -119,6 +121,32 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.isPasswordMatched = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
-const User = mongoose.model("User", userSchema);
 
+//Verify Account
+userSchema.methods.getAccounVerificationToken = function () {
+  //create a token
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  this.accountVerificationToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex");
+  this.accountVerificationTokenExpires = Date.now() + 30 * 60 * 1000; //10 minutes
+  return verificationToken;
+};
+
+//Password reset/forgot password
+
+userSchema.methods.getResetPaswordToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpires = Date.now() + 30 * 60 * 1000; //10 minutes
+  return resetToken;
+};
+
+//Compile schema into model
+const User = mongoose.model("User", userSchema);
 module.exports = User;

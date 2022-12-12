@@ -4,10 +4,13 @@ const User = require("../../models/user/User");
 const validateMongodbId = require("../../utils/validateMongoDbId");
 const sgMail = require("@sendgrid/mail");
 const { cloudinaryUploadImage } = require("../../utils/cloudinary");
-
+const sendEmail = require("../../utils/sendEmail");
+const crypto = require("crypto");
+const { response } = require("express");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 //--------------------------------------//
-//-------PROFILE PHOTO UPLOAD--------------//
+// PROFILE PHOTO UPLOAD
 //--------------------------------------//
 
 exports.profilePhotoUploadCtrl = expressAsyncHandler(async (req, res) => {
@@ -27,8 +30,9 @@ exports.profilePhotoUploadCtrl = expressAsyncHandler(async (req, res) => {
   );
   res.json(foundUser);
 });
+
 //--------------------------------------//
-//-------REGISTER USER-----------------//
+// REGISTER USER
 //--------------------------------------//
 exports.userRegister = expressAsyncHandler(async (req, res, next) => {
   const userExists = await User.findOne({ email: req?.body?.email });
@@ -47,7 +51,7 @@ exports.userRegister = expressAsyncHandler(async (req, res, next) => {
 });
 
 //--------------------------------------//
-//-------LOGIN USER-----------------//
+//LOGIN USER
 //--------------------------------------//
 exports.loginUser = expressAsyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -71,7 +75,7 @@ exports.loginUser = expressAsyncHandler(async (req, res) => {
 });
 
 //--------------------------------------//
-//-------FETCH ALL USERS-----------------//
+// FETCH ALL USERS
 //--------------------------------------//
 exports.fetchAllUsers = expressAsyncHandler(async (req, res) => {
   try {
@@ -84,7 +88,7 @@ exports.fetchAllUsers = expressAsyncHandler(async (req, res) => {
 });
 
 //--------------------------------------//
-//-------DELETE USER-----------------//
+//DELETE USER
 //--------------------------------------//
 exports.deleteUser = expressAsyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -98,7 +102,7 @@ exports.deleteUser = expressAsyncHandler(async (req, res) => {
 });
 
 //--------------------------------------//
-//-------FETCH SINGLE USER-----------------//
+//FETCH SINGLE USER
 //--------------------------------------//
 exports.fetchSingleUser = expressAsyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -112,7 +116,7 @@ exports.fetchSingleUser = expressAsyncHandler(async (req, res) => {
 });
 
 //--------------------------------------//
-//-------USER PROFILE-----------------//
+//USER PROFILE
 //--------------------------------------//
 exports.userProfile = expressAsyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -126,7 +130,7 @@ exports.userProfile = expressAsyncHandler(async (req, res) => {
 });
 
 //--------------------------------------//
-//-------UPDATE USER PROFILE-----------------//
+//UPDATE USER PROFILE
 //--------------------------------------//
 
 exports.updateUser = expressAsyncHandler(async (req, res) => {
@@ -282,21 +286,131 @@ exports.unblockUser = expressAsyncHandler(async (req, res) => {
 });
 
 //--------------------------------------//
-//------- SENDEMAIL - ACCOUNT VERIFICATION-------------//
+// SENDEMAIL - ACCOUNT VERIFICATION
 //--------------------------------------//
 
-exports.generateVeificationToken = expressAsyncHandler(async (req, res) => {
+// exports.generateVeificationToken = expressAsyncHandler(async (req, res) => {
+//   try {
+//     //build your message
+//     const msg = {
+//       to: "gourhoney26@gmail.com",
+//       from: "anamikagour666@gmail.com",
+//       subject: "verify mail message",
+//       text: "Check it out",
+//     };
+//     await sgMail.send(msg);
+//     res.json("email sent successfully");
+//   } catch (err) {
+//     res.json(err);
+//   }
+// });
+
+//--------------------------------------//
+// GENERATE EMAIL VERIFICATION TOKEN
+//--------------------------------------//
+exports.generateVerificationMail = expressAsyncHandler(async (req, res) => {
+  const loginUserId = req.user.id;
+  const user = await User.findById(loginUserId);
+  console.log(user);
   try {
-    //build your message
-    const msg = {
-      to: "gourhoney26@gmail.com",
-      from: "anamikagour666@gmail.com",
-      subject: "verify mail message",
-      text: "Check it out",
-    };
-    await sgMail.send(msg);
-    res.json("email sent successfully");
+    // Generate Token
+    const verificationToken = await user.getAccounVerificationToken();
+    await user.save();
+
+    //Build your message
+    const resetURL = `${req.protocol}://${req.get(
+      "host"
+    )}/verify-account/${verificationToken}`;
+
+    const message = `Your account verification link is, Verify within 10 minutes, :- \n\n ${resetURL} \n\n If you have not requested, Then, Please ignore`;
+
+    await sendEmail({
+      email: "anamikagour666@gmail.com",
+      subject: ` Verification mail`,
+      message,
+    });
+    res.json(resetURL);
   } catch (err) {
     res.json(err);
   }
+});
+
+//--------------------------------------//
+// ACCOUNT  VERIFICATION
+//--------------------------------------//
+
+exports.accountVerification = expressAsyncHandler(async (req, res) => {
+  const { token } = req.body;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  console.log(hashedToken);
+
+  //find this user by token
+  const user = await User.findOne({
+    accountVerificationToken: hashedToken,
+    accountVerificationTokenExpires: { $gt: new Date() },
+  });
+
+  if (!user) throw new Error("Token Expired , try again lter !!");
+
+  //update the propery to true
+  user.isAccountVerified = true;
+  user.accountVerificationToken = undefined;
+  user.accountVerificationTokenExpires = undefined;
+  await user.save();
+  res.json(user);
+});
+
+//--------------------------------------//
+// FORGOT PASSWORD TOKEN
+//--------------------------------------//
+
+exports.resetPasswordToken = expressAsyncHandler(async (req, res) => {
+  //find the user by email
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
+
+  try {
+    const token = await user.getResetPaswordToken();
+    await user.save();
+
+    //Build your message
+    const resetURL = `${req.protocol}://${req.get(
+      "host"
+    )}/verify-account/${token}`;
+
+    const message = `Your reset Password link is, :- \n\n ${resetURL} \n\n If you have not requested, Then, Please ignore \n Link will expire in 10 minutes`;
+
+    await sendEmail({
+      email: email,
+      subject: ` Reset Password `,
+      message,
+    });
+    res.json(resetURL);
+  } catch (err) {
+    res.json(err);
+  }
+});
+
+//--------------------------------------//
+//  RESET PASSWORD
+//--------------------------------------//
+exports.resetPassword = expressAsyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  //find user with hashed token
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: new Date() },
+  });
+  if (!user) throw new Error("Token Expired, try again lter!!");
+
+  //Update /chnage password
+  user.password = password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  res.json(user);
 });
