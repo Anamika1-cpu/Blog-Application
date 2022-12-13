@@ -1,12 +1,13 @@
 const expressAsyncHandler = require("express-async-handler");
 const generateToken = require("../../config/database/token/generateToken");
-const User = require("../../models/user/User");
 const validateMongodbId = require("../../utils/validateMongoDbId");
 const sgMail = require("@sendgrid/mail");
 const { cloudinaryUploadImage } = require("../../utils/cloudinary");
 const sendEmail = require("../../utils/sendEmail");
 const crypto = require("crypto");
 const { response } = require("express");
+const User = require("../../models/user/User");
+const fs = require("fs");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 //--------------------------------------//
@@ -28,6 +29,8 @@ exports.profilePhotoUploadCtrl = expressAsyncHandler(async (req, res) => {
       new: true,
     }
   );
+  //Remove image from local public folder
+  fs.unlinkSync(localPath);
   res.json(foundUser);
 });
 
@@ -84,7 +87,6 @@ exports.fetchAllUsers = expressAsyncHandler(async (req, res) => {
   } catch (err) {
     res.json(err);
   }
-  console.log(req.headers);
 });
 
 //--------------------------------------//
@@ -122,7 +124,7 @@ exports.userProfile = expressAsyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongodbId(id);
   try {
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("posts");
     res.json(user);
   } catch (err) {
     res.json(err);

@@ -4,16 +4,20 @@ const dbConnect = require("./config/database/dbConnect");
 const { userRegister } = require("./controllers/user/userCntrl");
 const { errorHandler, notFound } = require("./middlewares/error/errorHandler");
 const userRoutes = require("./routes/user/userRoute");
-
+const postRoutes = require("./routes/post/postRoute");
+const cors = require("cors");
 dbConnect();
 
 const app = express();
 //middleware
 
 app.use(express.json());
-
+//cors
+app.use(cors());
+//user routes
 app.use("/api/users", userRoutes);
-
+//post routes
+app.use("/api/posts", postRoutes);
 //error Handler
 app.use(notFound);
 app.use(errorHandler);
