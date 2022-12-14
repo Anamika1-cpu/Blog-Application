@@ -6,6 +6,8 @@ const {
   fetchSinglePost,
   updatePost,
   deletePost,
+  toggleAddDislikeToPost,
+  toggleAddLikeToPosts,
 } = require("../../controllers/post/postCntrl");
 const authMiddleware = require("../../middlewares/error/auth/authMiddleware");
 const {
@@ -30,5 +32,9 @@ router.get("/:id", fetchSinglePost);
 router.put("/:id", authMiddleware, updatePost);
 
 router.delete("/:id", authMiddleware, deletePost);
+
+router.post("/likes", authMiddleware, toggleAddLikeToPosts);
+
+router.post("/dislike", authMiddleware, toggleAddDislikeToPost);
 
 module.exports = router;
