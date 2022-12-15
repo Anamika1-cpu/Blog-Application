@@ -5,6 +5,7 @@ const { userRegister } = require("./controllers/user/userCntrl");
 const { errorHandler, notFound } = require("./middlewares/error/errorHandler");
 const userRoutes = require("./routes/user/userRoute");
 const postRoutes = require("./routes/post/postRoute");
+const commentRoutes = require("./routes/comment/commentRoute");
 const cors = require("cors");
 dbConnect();
 
@@ -18,6 +19,9 @@ app.use(cors());
 app.use("/api/users", userRoutes);
 //post routes
 app.use("/api/posts", postRoutes);
+//comment routes
+app.use("/api/comments", commentRoutes);
+
 //error Handler
 app.use(notFound);
 app.use(errorHandler);
