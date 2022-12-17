@@ -6,6 +6,8 @@ const { errorHandler, notFound } = require("./middlewares/error/errorHandler");
 const userRoutes = require("./routes/user/userRoute");
 const postRoutes = require("./routes/post/postRoute");
 const commentRoutes = require("./routes/comment/commentRoute");
+const emailRoutes = require("./routes/email/emailMsgRoute");
+const categoryRoutes = require("./routes/category/categoryRoute");
 const cors = require("cors");
 dbConnect();
 
@@ -21,6 +23,10 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 //comment routes
 app.use("/api/comments", commentRoutes);
+//email routes
+app.use("/api/email", emailRoutes);
+//catgeory routes
+app.use("/api/category", categoryRoutes);
 
 //error Handler
 app.use(notFound);
