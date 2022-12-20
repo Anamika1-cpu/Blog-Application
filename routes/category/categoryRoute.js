@@ -4,15 +4,16 @@ const {
   fetchAllCategories,
   updateCategory,
   deleteCategory,
+  fetchSingleCategory,
 } = require("../../controllers/category/Category");
 const authMiddleware = require("../../middlewares/auth/authMiddleware");
 const router = express.Router();
 
 router.post("/", authMiddleware, createCategory);
 
-router.get("/", authMiddleware, fetchAllCategories);
+router.get("/", fetchAllCategories);
 
-router.get("/:id", authMiddleware, fetchAllCategories);
+router.get("/:id", authMiddleware, fetchSingleCategory);
 
 router.put("/:id", authMiddleware, updateCategory);
 
