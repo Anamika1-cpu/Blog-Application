@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post("/", authMiddleware, createComment);
 
-router.get("/", authMiddleware, fetchAllComments);
+router.get("/", fetchAllComments);
 
 router.get("/:id", authMiddleware, fetchSingleComment);
 

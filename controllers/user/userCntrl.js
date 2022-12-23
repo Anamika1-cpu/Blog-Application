@@ -110,7 +110,7 @@ exports.fetchSingleUser = expressAsyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongodbId(id);
   try {
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("posts");
     res.json(user);
   } catch (err) {
     res.json(err);

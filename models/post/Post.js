@@ -39,7 +39,7 @@ const postSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Please Author is required"],
+      required: [true, "Author is required"],
     },
     description: {
       type: String,
@@ -61,6 +61,13 @@ const postSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+//populate comments
+postSchema.virtual("comments", {
+  ref: "Comment",
+  foreignField: "post",
+  localField: "_id",
+});
 
 //compile
 const Post = mongoose.model("Post", postSchema);
