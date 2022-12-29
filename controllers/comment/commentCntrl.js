@@ -1,5 +1,6 @@
 const expressAsyncHandler = require("express-async-handler");
 const Comment = require("../../models/comment/Comment");
+const blockUser = require("../../utils/isBlock");
 
 //--------------------------------
 // CREATE COMMENT
@@ -8,7 +9,8 @@ const Comment = require("../../models/comment/Comment");
 exports.createComment = expressAsyncHandler(async (req, res) => {
   //1.Get the user
   const user = req.user;
-
+  //Check if user is blocked
+  blockUser(user);
   //2.Get the post
   const { postId, description } = req.body;
   console.log(postId, description);

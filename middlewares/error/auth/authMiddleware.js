@@ -19,10 +19,9 @@ const authMiddleware = expressAsyncHandler(async (req, res, next) => {
         throw new Error("There is no token attach to the headers");
       }
     } catch (err) {
-      throw new Error("Not authorized token expired");
+      // throw new Error("Not authorized token expired");
+      res.json(err);
     }
-  } else {
-    throw new Error("There is no token attach");
   }
 });
 

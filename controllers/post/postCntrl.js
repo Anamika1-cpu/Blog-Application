@@ -5,6 +5,7 @@ const Filter = require("bad-words");
 const User = require("../../models/user/User");
 const { cloudinaryUploadImage } = require("../../utils/cloudinary");
 const fs = require("fs");
+const blockUser = require("../../utils/isBlock");
 //----------------------------------------------//
 // POST CREATION
 //----------------------------------------------//
@@ -12,6 +13,7 @@ const fs = require("fs");
 exports.createPost = expressAsyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongodbId(_id);
+  blockUser(req.user);
   const filter = new Filter();
   const isProfane = filter.isProfane(req.body.title, req.body.description);
   if (isProfane) {
@@ -63,10 +65,15 @@ exports.fetchAllPosts = expressAsyncHandler(async (req, res) => {
     if (hasCategory) {
       const posts = await Post.find({ category: hasCategory })
         .populate("user")
-        .populate("comments");
+        .populate("comments")
+        .sort("-createdAt");
       res.json(posts);
     } else {
-      const posts = await Post.find({}).populate("user").populate("comments");
+      const posts = await Post.find({})
+        .populate("user")
+        .populate("comments")
+        .sort("-createdAt");
+
       res.json(posts);
     }
   } catch (err) {

@@ -13,7 +13,7 @@ router.post("/", authMiddleware, createCategory);
 
 router.get("/", fetchAllCategories);
 
-router.get("/:id", authMiddleware, fetchSingleCategory);
+router.get("/:id", fetchSingleCategory);
 
 router.put("/:id", authMiddleware, updateCategory);
 

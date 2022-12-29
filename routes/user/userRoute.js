@@ -43,7 +43,7 @@ router.delete("/:id", deleteUser);
 
 router.get("/:id", fetchSingleUser);
 
-router.put("/:id", authMiddleware, updateUser);
+router.put("/", authMiddleware, updateUser);
 
 router.patch("/password", authMiddleware, updateUserPassword);
 
@@ -62,7 +62,7 @@ router.post(
   authMiddleware,
   generateVerificationMail
 );
-router.patch("/verify-account", authMiddleware, accountVerification);
+router.put("/verify-account", authMiddleware, accountVerification);
 
 router.post("/forgot-password-token", resetPasswordToken);
 
