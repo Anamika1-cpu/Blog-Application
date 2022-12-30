@@ -17,7 +17,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 exports.profilePhotoUploadCtrl = expressAsyncHandler(async (req, res) => {
   const { _id } = req?.user;
-  this.blockUser(req?.user);
   //1.Get the path to image
   const localPath = `public/images/profile/${req.file.filename}`;
   //2.Upload to cloudinary
