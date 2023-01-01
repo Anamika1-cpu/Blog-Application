@@ -309,26 +309,6 @@ exports.unblockUser = expressAsyncHandler(async (req, res) => {
 });
 
 //--------------------------------------//
-// SENDEMAIL - ACCOUNT VERIFICATION
-//--------------------------------------//
-
-// exports.generateVeificationToken = expressAsyncHandler(async (req, res) => {
-//   try {
-//     //build your message
-//     const msg = {
-//       to: "gourhoney26@gmail.com",
-//       from: "anamikagour666@gmail.com",
-//       subject: "verify mail message",
-//       text: "Check it out",
-//     };
-//     await sgMail.send(msg);
-//     res.json("email sent successfully");
-//   } catch (err) {
-//     res.json(err);
-//   }
-// });
-
-//--------------------------------------//
 // GENERATE EMAIL VERIFICATION TOKEN
 //--------------------------------------//
 exports.generateVerificationMail = expressAsyncHandler(async (req, res) => {
@@ -341,7 +321,7 @@ exports.generateVerificationMail = expressAsyncHandler(async (req, res) => {
     await user.save();
 
     //Build your message
-    const resetURL = `${req.protocol}://localhost:3000/verify-account/${verificationToken}`;
+    const resetURL = `${req.protocol}://https://strong-liger-f94f9c.netlify.app/verify-account/${verificationToken}`;
 
     const message = `Your account verification link is, Verify within 10 minutes, :- \n\n ${resetURL} \n\n If you have not requested, Then, Please ignore`;
 
@@ -395,7 +375,7 @@ exports.resetPasswordToken = expressAsyncHandler(async (req, res) => {
     await user.save();
 
     //Build your message
-    const resetURL = `${req.protocol}://localhost:3000/reset-password/${token}`;
+    const resetURL = `${req.protocol}://https://strong-liger-f94f9c.netlify.app/reset-password/${token}`;
 
     const message = `Your reset Password link is, :- \n\n ${resetURL} \n\n If you have not requested, Then, Please ignore \n Link will expire in 10 minutes`;
 
